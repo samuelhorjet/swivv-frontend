@@ -1,0 +1,2637 @@
+{
+  "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U",
+  "metadata": {
+    "name": "swiv_privacy",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "batch_calculate_weights",
+      "discriminator": [
+        120,
+        37,
+        151,
+        131,
+        92,
+        2,
+        221,
+        252
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "batch_undelegate_bets",
+      "discriminator": [
+        147,
+        57,
+        30,
+        144,
+        142,
+        241,
+        140,
+        254
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magic_context",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_reward",
+      "discriminator": [
+        149,
+        95,
+        181,
+        242,
+        94,
+        90,
+        158,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_bet",
+          "writable": true
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_bet_permission",
+      "discriminator": [
+        49,
+        47,
+        58,
+        136,
+        189,
+        217,
+        159,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "user_bet"
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "permission",
+          "writable": true
+        },
+        {
+          "name": "permission_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "req_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "create_pool",
+      "discriminator": [
+        233,
+        146,
+        209,
+        142,
+        207,
+        104,
+        64,
+        188
+      ],
+      "accounts": [
+        {
+          "name": "global_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "name"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint"
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "admin_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "metadata",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "start_time",
+          "type": "i64"
+        },
+        {
+          "name": "end_time",
+          "type": "i64"
+        },
+        {
+          "name": "max_accuracy_buffer",
+          "type": "u64"
+        },
+        {
+          "name": "conviction_bonus_bps",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "delegate_bet",
+      "discriminator": [
+        55,
+        176,
+        95,
+        121,
+        115,
+        103,
+        253,
+        251
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "buffer_user_bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user_bet"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                87,
+                78,
+                245,
+                196,
+                254,
+                150,
+                243,
+                214,
+                191,
+                68,
+                66,
+                225,
+                72,
+                218,
+                23,
+                164,
+                243,
+                76,
+                135,
+                17,
+                53,
+                2,
+                181,
+                90,
+                82,
+                64,
+                56,
+                230,
+                35,
+                17,
+                214,
+                127
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_user_bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user_bet"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_user_bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user_bet"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "user_bet",
+          "writable": true
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "owner_program",
+          "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U"
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "request_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "delegate_bet_permission",
+      "discriminator": [
+        188,
+        237,
+        22,
+        77,
+        177,
+        127,
+        248,
+        107
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "user_bet",
+          "writable": true
+        },
+        {
+          "name": "permission",
+          "writable": true
+        },
+        {
+          "name": "permission_program"
+        },
+        {
+          "name": "delegation_program"
+        },
+        {
+          "name": "delegation_buffer",
+          "writable": true
+        },
+        {
+          "name": "delegation_record",
+          "writable": true
+        },
+        {
+          "name": "delegation_metadata",
+          "writable": true
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "request_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "delegate_pool",
+      "discriminator": [
+        209,
+        44,
+        8,
+        221,
+        183,
+        173,
+        33,
+        244
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "buffer_pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                87,
+                78,
+                245,
+                196,
+                254,
+                150,
+                243,
+                214,
+                191,
+                68,
+                66,
+                225,
+                72,
+                218,
+                23,
+                164,
+                243,
+                76,
+                135,
+                17,
+                53,
+                2,
+                181,
+                90,
+                82,
+                64,
+                56,
+                230,
+                35,
+                17,
+                214,
+                127
+              ]
+            }
+          }
+        },
+        {
+          "name": "delegation_record_pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "delegation_metadata_pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegation_program"
+            }
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "pool_name"
+              }
+            ]
+          }
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "owner_program",
+          "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U"
+        },
+        {
+          "name": "delegation_program",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "pool_name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "emergency_refund",
+      "discriminator": [
+        188,
+        73,
+        52,
+        195,
+        137,
+        70,
+        180,
+        147
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_bet",
+          "writable": true
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "finalize_weights",
+      "discriminator": [
+        211,
+        20,
+        140,
+        3,
+        104,
+        45,
+        91,
+        73
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "init_bet",
+      "discriminator": [
+        15,
+        172,
+        254,
+        252,
+        114,
+        198,
+        174,
+        255
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "user_bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  98,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "request_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "request_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "initialize_protocol",
+      "discriminator": [
+        188,
+        233,
+        252,
+        106,
+        134,
+        146,
+        202,
+        91
+      ],
+      "accounts": [
+        {
+          "name": "global_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "treasury_wallet"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "protocol_fee_bps",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "place_bet",
+      "discriminator": [
+        222,
+        62,
+        67,
+        220,
+        63,
+        166,
+        126,
+        33
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_bet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  98,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "request_id"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "prediction",
+          "type": "u64"
+        },
+        {
+          "name": "request_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "process_undelegation",
+      "discriminator": [
+        196,
+        28,
+        41,
+        206,
+        48,
+        37,
+        51,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "base_account",
+          "writable": true
+        },
+        {
+          "name": "buffer"
+        },
+        {
+          "name": "payer",
+          "writable": true
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "account_seeds",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolve_pool",
+      "discriminator": [
+        191,
+        164,
+        190,
+        142,
+        178,
+        198,
+        162,
+        249
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.name",
+                "account": "Pool"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "final_outcome",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_pause",
+      "discriminator": [
+        63,
+        32,
+        154,
+        2,
+        56,
+        103,
+        79,
+        45
+      ],
+      "accounts": [
+        {
+          "name": "global_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "transfer_admin",
+      "discriminator": [
+        42,
+        242,
+        66,
+        106,
+        228,
+        10,
+        111,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "current_admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "undelegate_pool",
+      "discriminator": [
+        75,
+        22,
+        17,
+        43,
+        47,
+        201,
+        22,
+        246
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "magic_program",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magic_context",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_bet",
+      "discriminator": [
+        198,
+        86,
+        110,
+        99,
+        122,
+        242,
+        136,
+        221
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_bet",
+          "writable": true
+        },
+        {
+          "name": "pool",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user_bet.pool_identifier",
+                "account": "UserBet"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_prediction",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "update_config",
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_treasury",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "new_protocol_fee_bps",
+          "type": {
+            "option": "u64"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "GlobalConfig",
+      "discriminator": [
+        149,
+        8,
+        156,
+        202,
+        160,
+        252,
+        176,
+        217
+      ]
+    },
+    {
+      "name": "Pool",
+      "discriminator": [
+        241,
+        154,
+        109,
+        4,
+        17,
+        177,
+        109,
+        188
+      ]
+    },
+    {
+      "name": "UserBet",
+      "discriminator": [
+        180,
+        131,
+        8,
+        241,
+        60,
+        243,
+        46,
+        63
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminTransferred",
+      "discriminator": [
+        255,
+        147,
+        182,
+        5,
+        199,
+        217,
+        38,
+        179
+      ]
+    },
+    {
+      "name": "AssetConfigUpdated",
+      "discriminator": [
+        12,
+        97,
+        64,
+        94,
+        123,
+        177,
+        111,
+        10
+      ]
+    },
+    {
+      "name": "BetDelegated",
+      "discriminator": [
+        223,
+        39,
+        83,
+        220,
+        92,
+        59,
+        154,
+        11
+      ]
+    },
+    {
+      "name": "BetPlaced",
+      "discriminator": [
+        88,
+        88,
+        145,
+        226,
+        126,
+        206,
+        32,
+        0
+      ]
+    },
+    {
+      "name": "BetRefunded",
+      "discriminator": [
+        32,
+        234,
+        173,
+        102,
+        106,
+        4,
+        2,
+        203
+      ]
+    },
+    {
+      "name": "BetUndelegated",
+      "discriminator": [
+        249,
+        154,
+        196,
+        190,
+        74,
+        153,
+        244,
+        122
+      ]
+    },
+    {
+      "name": "BetUpdated",
+      "discriminator": [
+        184,
+        177,
+        75,
+        30,
+        151,
+        135,
+        38,
+        237
+      ]
+    },
+    {
+      "name": "ConfigUpdated",
+      "discriminator": [
+        40,
+        241,
+        230,
+        122,
+        11,
+        19,
+        198,
+        194
+      ]
+    },
+    {
+      "name": "OutcomeCalculated",
+      "discriminator": [
+        35,
+        255,
+        97,
+        66,
+        13,
+        30,
+        213,
+        96
+      ]
+    },
+    {
+      "name": "PauseChanged",
+      "discriminator": [
+        238,
+        188,
+        213,
+        78,
+        134,
+        209,
+        178,
+        218
+      ]
+    },
+    {
+      "name": "PoolCreated",
+      "discriminator": [
+        202,
+        44,
+        41,
+        88,
+        104,
+        220,
+        157,
+        82
+      ]
+    },
+    {
+      "name": "PoolDelegated",
+      "discriminator": [
+        151,
+        191,
+        195,
+        52,
+        248,
+        173,
+        72,
+        116
+      ]
+    },
+    {
+      "name": "PoolResolved",
+      "discriminator": [
+        37,
+        148,
+        82,
+        156,
+        128,
+        131,
+        201,
+        171
+      ]
+    },
+    {
+      "name": "PoolSecretsDelegated",
+      "discriminator": [
+        206,
+        56,
+        176,
+        117,
+        52,
+        5,
+        143,
+        222
+      ]
+    },
+    {
+      "name": "PoolSecretsUndelegated",
+      "discriminator": [
+        12,
+        188,
+        186,
+        95,
+        104,
+        237,
+        166,
+        136
+      ]
+    },
+    {
+      "name": "PoolUndelegated",
+      "discriminator": [
+        223,
+        51,
+        251,
+        176,
+        89,
+        9,
+        173,
+        114
+      ]
+    },
+    {
+      "name": "ProtocolInitialized",
+      "discriminator": [
+        173,
+        122,
+        168,
+        254,
+        9,
+        118,
+        76,
+        132
+      ]
+    },
+    {
+      "name": "RewardClaimed",
+      "discriminator": [
+        49,
+        28,
+        87,
+        84,
+        158,
+        48,
+        229,
+        175
+      ]
+    },
+    {
+      "name": "WeightsFinalized",
+      "discriminator": [
+        104,
+        182,
+        174,
+        242,
+        15,
+        117,
+        69,
+        47
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Paused",
+      "msg": "Global protocol is paused."
+    },
+    {
+      "code": 6001,
+      "name": "Unauthorized",
+      "msg": "Unauthorized admin action."
+    },
+    {
+      "code": 6002,
+      "name": "MathOverflow",
+      "msg": "Math operation overflow."
+    },
+    {
+      "code": 6003,
+      "name": "InsufficientLiquidity",
+      "msg": "Insufficient liquidity in pool."
+    },
+    {
+      "code": 6004,
+      "name": "AlreadySettled",
+      "msg": "Bet is already settled."
+    },
+    {
+      "code": 6005,
+      "name": "BetAlreadyInitialized",
+      "msg": "Bet is already initialized."
+    },
+    {
+      "code": 6006,
+      "name": "DurationTooShort",
+      "msg": "Bet duration is too short."
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAsset",
+      "msg": "Invalid asset symbol."
+    },
+    {
+      "code": 6008,
+      "name": "AssetNotWhitelisted",
+      "msg": "Asset is not whitelisted."
+    },
+    {
+      "code": 6009,
+      "name": "SeedMismatch",
+      "msg": "Seeds do not result in a valid address."
+    },
+    {
+      "code": 6010,
+      "name": "PoolMismatch",
+      "msg": "Bet does not match the current pool/asset config"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidPrivateKey",
+      "msg": "Private Key must be 32 bytes long."
+    },
+    {
+      "code": 6012,
+      "name": "SettlementTooEarly",
+      "msg": "Admin force-settlement is not yet allowed for this bet."
+    },
+    {
+      "code": 6013,
+      "name": "TimeoutNotMet",
+      "msg": "Emergency refund timeout has not been met."
+    },
+    {
+      "code": 6014,
+      "name": "NotCalculatedYet",
+      "msg": "Bet has not been calculated by the TEE yet."
+    },
+    {
+      "code": 6015,
+      "name": "UndelegationTooEarly",
+      "msg": "You must wait for the pool to end before undelegating to preserve privacy."
+    },
+    {
+      "code": 6016,
+      "name": "DecryptionFailed",
+      "msg": "TEE failed to decrypt the prediction."
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminTransferred",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "old_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetConfigUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "pyth_feed",
+            "type": "pubkey"
+          },
+          {
+            "name": "volatility_factor",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetDelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bet_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "request_id",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetPlaced",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bet_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool_identifier",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "end_timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetRefunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bet_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "is_emergency",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Initialized"
+          },
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Calculated"
+          },
+          {
+            "name": "Settled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetUndelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bet_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_batch",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bet_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treasury",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": "u64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "total_users",
+            "type": "u64"
+          },
+          {
+            "name": "batch_settle_wait_duration",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OutcomeCalculated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bet_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "weight",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PauseChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "is_paused",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Pool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "end_time",
+            "type": "i64"
+          },
+          {
+            "name": "vault_balance",
+            "type": "u64"
+          },
+          {
+            "name": "max_accuracy_buffer",
+            "type": "u64"
+          },
+          {
+            "name": "conviction_bonus_bps",
+            "type": "u64"
+          },
+          {
+            "name": "metadata",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "resolution_target",
+            "type": "u64"
+          },
+          {
+            "name": "is_resolved",
+            "type": "bool"
+          },
+          {
+            "name": "resolution_ts",
+            "type": "i64"
+          },
+          {
+            "name": "total_weight",
+            "type": "u128"
+          },
+          {
+            "name": "weight_finalized",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_name",
+            "type": "string"
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "end_time",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolDelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_address",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolResolved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_name",
+            "type": "string"
+          },
+          {
+            "name": "final_outcome",
+            "type": "u64"
+          },
+          {
+            "name": "resolution_ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolSecretsDelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "secrets_address",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolSecretsUndelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "secrets_address",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolUndelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_address",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_wallet",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RewardClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bet_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserBet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool_identifier",
+            "type": "string"
+          },
+          {
+            "name": "deposit",
+            "type": "u64"
+          },
+          {
+            "name": "end_timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "creation_ts",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u32"
+          },
+          {
+            "name": "calculated_weight",
+            "type": "u128"
+          },
+          {
+            "name": "is_weight_added",
+            "type": "bool"
+          },
+          {
+            "name": "prediction",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BetStatus"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WeightsFinalized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool_name",
+            "type": "string"
+          },
+          {
+            "name": "total_weight",
+            "type": "u128"
+          },
+          {
+            "name": "fee_deducted",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
