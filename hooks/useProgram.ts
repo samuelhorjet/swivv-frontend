@@ -11,7 +11,7 @@ export const useProgram = () => {
     if (!wallet) return null;
 
     const provider = new AnchorProvider(connection, wallet, {
-      preflightCommitment: "processed",
+      preflightCommitment: "confirmed",
     });
 
     return new Program<SwivPrivacy>(IDL, provider);

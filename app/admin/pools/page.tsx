@@ -5,26 +5,20 @@ import Link from "next/link";
 import { useProgram } from "../../../hooks/useProgram";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { IdlAccounts } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { SwivPrivacy } from "../../../idl/swiv_privacy";
-import { SEED_GLOBAL_CONFIG } from "../../../utils/contants"; // Import Seed
+import { SEED_PROTOCOL } from "../../../utils/contants";
+import { PoolWithAddress } from "../../../types/swiv";
+import { BN } from "@coral-xyz/anchor";
 
 const formatDate = (unixTs: number) => new Date(unixTs * 1000).toLocaleString();
 
-type Pool = IdlAccounts<SwivPrivacy>["pool"];
-
 export default function AdminPoolsList() {
   const { program, connection } = useProgram();
-  const { publicKey } = useWallet(); // Get connected wallet
+  const { publicKey } = useWallet();
 
-  const [pools, setPools] = useState<{ publicKey: PublicKey; account: Pool }[]>(
-    [],
-  );
+  const [pools, setPools] = useState<PoolWithAddress[]>([]);
   const [loading, setLoading] = useState(true);
   const [poolsNeedingAction, setPoolsNeedingAction] = useState<number>(0);
-
-  // --- NEW: Security State ---
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
 
@@ -36,26 +30,23 @@ export default function AdminPoolsList() {
 
     const fetchData = async () => {
       try {
-        // 1. SECURITY CHECK: Am I the Admin?
-        const [configPda] = PublicKey.findProgramAddressSync(
-          [SEED_GLOBAL_CONFIG],
+        const [protocolPda] = PublicKey.findProgramAddressSync(
+          [SEED_PROTOCOL],
           program.programId,
         );
-        const configAccount =
-          await program.account.globalConfig.fetch(configPda);
+        const protocolAccount =
+          await program.account.protocol.fetch(protocolPda);
 
-        const adminKey = configAccount.admin;
-        if (adminKey.equals(publicKey)) {
+        if (protocolAccount.admin.equals(publicKey)) {
           setIsAdmin(true);
         } else {
           setIsAdmin(false);
-          setLoading(false); // Stop loading if not admin
+          setLoading(false);
           setIsCheckingAuth(false);
-          return; // STOP HERE if not admin
+          return;
         }
         setIsCheckingAuth(false);
 
-        // 2. Fetch Pools (Only if Admin)
         const discriminator = await program.coder.accounts.memcmp("pool");
         const rawAccounts = await connection.getProgramAccounts(
           program.programId,
@@ -66,8 +57,7 @@ export default function AdminPoolsList() {
           },
         );
 
-        const decodedPools: { publicKey: PublicKey; account: Pool }[] = [];
-
+        const decodedPools: PoolWithAddress[] = [];
         for (const raw of rawAccounts) {
           try {
             const account = program.coder.accounts.decode(
@@ -76,20 +66,22 @@ export default function AdminPoolsList() {
             );
             decodedPools.push({ publicKey: raw.pubkey, account: account });
           } catch {
-            console.warn(`Skipping corrupt pool: ${raw.pubkey.toBase58()}`);
+            /* skip */
           }
         }
 
-        const sorted = decodedPools.sort(
-          (a, b) =>
-            b.account.startTime.toNumber() - a.account.startTime.toNumber(),
-        );
+        // --- SAFE SORTING ---
+        const sorted = decodedPools.sort((a, b) => {
+          if (b.account.startTime.gt(a.account.startTime)) return 1;
+          if (a.account.startTime.gt(b.account.startTime)) return -1;
+          return 0;
+        });
 
         setPools(sorted);
 
-        const now = Math.floor(Date.now() / 1000);
+        const nowBN = new BN(Math.floor(Date.now() / 1000));
         const actionCount = sorted.filter(
-          (p) => p.account.endTime.toNumber() < now && !p.account.isResolved,
+          (p) => p.account.endTime.lt(nowBN) && !p.account.weightFinalized,
         ).length;
         setPoolsNeedingAction(actionCount);
       } catch (error: unknown) {
@@ -102,39 +94,22 @@ export default function AdminPoolsList() {
     fetchData();
   }, [program, connection, publicKey]);
 
-  if (isCheckingAuth) {
+  if (isCheckingAuth)
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        Verifying Admin Privileges...
+      <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center">
+        Verifying Admin...
       </div>
     );
-  }
 
-  // --- NEW: BLOCK ACCESS IF NOT ADMIN ---
-  if (!isAdmin) {
+  if (!isAdmin)
     return (
-      <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center justify-center space-y-6">
-        <div className="bg-red-900/30 border border-red-500 p-8 rounded-lg max-w-md text-center">
-          <h1 className="text-3xl font-bold text-red-500 mb-4">
-            ⛔ Access Denied
-          </h1>
-          <p className="text-gray-300 mb-6">
-            You are not authorized to view this page. This area is restricted to
-            the Protocol Administrator.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Link
-              href="/"
-              className="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded"
-            >
-              Go Home
-            </Link>
-            <WalletMultiButton />
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center justify-center">
+        <h1 className="text-3xl text-red-500 mb-4">Access Denied</h1>
+        <Link href="/" className="bg-gray-700 px-4 py-2 rounded">
+          Go Home
+        </Link>
       </div>
     );
-  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
@@ -153,53 +128,55 @@ export default function AdminPoolsList() {
 
       <main className="max-w-6xl mx-auto space-y-8">
         {poolsNeedingAction > 0 && (
-          <div className="bg-yellow-900/40 border border-yellow-600 p-4 rounded-lg flex items-center justify-between animate-pulse">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🔔</span>
-              <div>
-                <h3 className="font-bold text-yellow-100">Action Required</h3>
-                <p className="text-yellow-200 text-sm">
-                  {poolsNeedingAction} pool(s) have ended and need settlement.
-                </p>
-              </div>
+          <div className="bg-yellow-900/40 border border-yellow-600 p-4 rounded-lg flex items-center justify-between">
+            <div>
+              <span className="text-2xl mr-2">🔔</span>
+              {poolsNeedingAction} pool(s) need settlement.
             </div>
           </div>
         )}
 
         {loading ? (
-          <div className="text-center text-gray-400">Loading...</div>
+          <div>Loading...</div>
         ) : pools.length === 0 ? (
-          <div className="text-center text-gray-500 py-10 bg-gray-800 rounded">
-            No pools found.
-          </div>
+          <div>No pools found.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pools.map((item) => {
               const account = item.account;
+
+              // SAFE DISPLAY CONVERSION
               const now = Date.now() / 1000;
-              const isEnded = account.endTime.toNumber() < now;
+              // Use safe conversion for endTime (seconds usually fit, but good practice)
+              const endTimeNum = Number(account.endTime.toString());
+              const isEnded = endTimeNum < now;
+
               const isResolved = account.isResolved;
+              const isFinalized = account.weightFinalized;
 
-              let statusLabel = "ACTIVE";
-              let statusColor = "bg-blue-900 text-blue-300";
-
-              if (isResolved) {
-                statusLabel = "RESOLVED";
-                statusColor = "bg-green-900 text-green-300";
-              } else if (isEnded) {
-                statusLabel = "ENDED (Action Needed)";
-                statusColor =
-                  "bg-yellow-600 text-white shadow-lg shadow-yellow-900/50";
-              }
+              const statusLabel = isFinalized
+                ? "SETTLED"
+                : isResolved
+                  ? "RESOLVED (TEE)"
+                  : isEnded
+                    ? "ENDED"
+                    : "ACTIVE";
+              const statusColor = isFinalized
+                ? "bg-green-900 text-green-300"
+                : isResolved
+                  ? "bg-purple-900 text-purple-300"
+                  : isEnded
+                    ? "bg-yellow-600 text-white"
+                    : "bg-blue-900 text-blue-300";
 
               return (
                 <Link
                   key={item.publicKey.toBase58()}
-                  href={`/admin/pools/${account.name}`}
+                  href={`/admin/pools/${item.publicKey.toBase58()}`}
                   className="block group"
                 >
                   <div
-                    className={`bg-gray-800 border ${isEnded && !isResolved ? "border-yellow-500" : "border-gray-700"} p-6 rounded-lg hover:border-blue-500 transition shadow-lg h-full flex flex-col`}
+                    className={`bg-gray-800 border p-6 rounded-lg hover:border-blue-500 transition shadow-lg h-full flex flex-col ${isEnded && !isFinalized ? "border-yellow-500" : "border-gray-700"}`}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="text-xl font-bold truncate text-white group-hover:text-blue-400">
@@ -211,25 +188,21 @@ export default function AdminPoolsList() {
                         {statusLabel}
                       </span>
                     </div>
-
-                    <p className="text-gray-400 text-sm mb-4 line-clamp-2 h-10">
-                      {account.metadata || "No description provided."}
-                    </p>
-
                     <div className="mt-auto space-y-2 text-sm text-gray-500">
                       <div className="flex justify-between">
                         <span>End:</span>
                         <span
                           className={isEnded ? "text-red-400" : "text-gray-300"}
                         >
-                          {formatDate(account.endTime.toNumber())}
+                          {endTimeNum > 0 ? formatDate(endTimeNum) : "Invalid"}
                         </span>
                       </div>
                       <div className="flex justify-between pt-2 border-t border-gray-700">
                         <span>Volume:</span>
+                        {/* FIX: Safe Number Conversion */}
                         <span className="text-white font-mono">
                           {(
-                            account.vaultBalance.toNumber() / 1_000_000
+                            Number(account.vaultBalance.toString()) / 1e6
                           ).toLocaleString()}{" "}
                           USDC
                         </span>

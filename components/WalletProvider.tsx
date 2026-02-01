@@ -2,14 +2,11 @@
 
 import React, { useMemo } from "react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { clusterApiUrl } from "@solana/web3.js";
 
 export const AppWalletProvider = ({ children }: { children: React.ReactNode }) => {
-  const network = WalletAdapterNetwork.Devnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = useMemo(() => "https://devnet.helius-rpc.com/?api-key=06c61703-7238-4f81-8ad0-c57dee8e2fc0", []);
 
   const wallets = useMemo(
     () => [

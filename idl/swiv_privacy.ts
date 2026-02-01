@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/swiv_privacy.json`.
  */
 export type SwivPrivacy = {
-  "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U",
+  "address": "5e4e9pooJgus8NcgdwZitZx1kF2vWZEA7MCTGi7BuKag",
   "metadata": {
     "name": "swivPrivacy",
     "version": "0.1.0",
@@ -47,7 +47,12 @@ export type SwivPrivacy = {
               },
               {
                 "kind": "account",
-                "path": "pool.name",
+                "path": "pool.admin",
+                "account": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "pool.pool_id",
                 "account": "pool"
               }
             ]
@@ -76,25 +81,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "magicProgram",
@@ -128,25 +115,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "poolVault",
@@ -250,29 +219,24 @@ export type SwivPrivacy = {
       ],
       "accounts": [
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -293,8 +257,12 @@ export type SwivPrivacy = {
                 ]
               },
               {
+                "kind": "account",
+                "path": "admin"
+              },
+              {
                 "kind": "arg",
-                "path": "name"
+                "path": "poolId"
               }
             ]
           }
@@ -352,6 +320,10 @@ export type SwivPrivacy = {
         }
       ],
       "args": [
+        {
+          "name": "poolId",
+          "type": "u64"
+        },
         {
           "name": "name",
           "type": "string"
@@ -425,38 +397,38 @@ export type SwivPrivacy = {
             "program": {
               "kind": "const",
               "value": [
-                87,
-                78,
-                245,
-                196,
-                254,
-                150,
-                243,
-                214,
-                191,
                 68,
-                66,
-                225,
-                72,
-                218,
-                23,
-                164,
-                243,
-                76,
-                135,
-                17,
-                53,
-                2,
-                181,
+                237,
                 90,
-                82,
-                64,
-                56,
-                230,
-                35,
-                17,
-                214,
-                127
+                161,
+                163,
+                164,
+                94,
+                195,
+                121,
+                3,
+                42,
+                107,
+                180,
+                216,
+                83,
+                176,
+                141,
+                109,
+                23,
+                213,
+                169,
+                2,
+                102,
+                215,
+                1,
+                116,
+                15,
+                26,
+                143,
+                157,
+                110,
+                105
               ]
             }
           }
@@ -541,7 +513,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "ownerProgram",
-          "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U"
+          "address": "5e4e9pooJgus8NcgdwZitZx1kF2vWZEA7MCTGi7BuKag"
         },
         {
           "name": "delegationProgram",
@@ -640,28 +612,23 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -691,38 +658,38 @@ export type SwivPrivacy = {
             "program": {
               "kind": "const",
               "value": [
-                87,
-                78,
-                245,
-                196,
-                254,
-                150,
-                243,
-                214,
-                191,
                 68,
-                66,
-                225,
-                72,
-                218,
-                23,
-                164,
-                243,
-                76,
-                135,
-                17,
-                53,
-                2,
-                181,
+                237,
                 90,
-                82,
-                64,
-                56,
-                230,
-                35,
-                17,
-                214,
-                127
+                161,
+                163,
+                164,
+                94,
+                195,
+                121,
+                3,
+                42,
+                107,
+                180,
+                216,
+                83,
+                176,
+                141,
+                109,
+                23,
+                213,
+                169,
+                2,
+                102,
+                215,
+                1,
+                116,
+                15,
+                26,
+                143,
+                157,
+                110,
+                105
               ]
             }
           }
@@ -813,8 +780,12 @@ export type SwivPrivacy = {
                 ]
               },
               {
+                "kind": "account",
+                "path": "admin"
+              },
+              {
                 "kind": "arg",
-                "path": "poolName"
+                "path": "poolId"
               }
             ]
           }
@@ -824,7 +795,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "ownerProgram",
-          "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U"
+          "address": "5e4e9pooJgus8NcgdwZitZx1kF2vWZEA7MCTGi7BuKag"
         },
         {
           "name": "delegationProgram",
@@ -837,8 +808,8 @@ export type SwivPrivacy = {
       ],
       "args": [
         {
-          "name": "poolName",
-          "type": "string"
+          "name": "poolId",
+          "type": "u64"
         }
       ]
     },
@@ -866,25 +837,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "poolVault",
@@ -943,28 +896,23 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -972,25 +920,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "poolVault",
@@ -1049,28 +979,23 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1078,25 +1003,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "poolVault",
@@ -1200,29 +1107,24 @@ export type SwivPrivacy = {
       ],
       "accounts": [
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1267,25 +1169,7 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "pool",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "pool"
-              }
-            ]
-          }
+          "name": "pool"
         },
         {
           "name": "userBet",
@@ -1388,28 +1272,23 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1417,25 +1296,7 @@ export type SwivPrivacy = {
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "pool"
-              }
-            ]
-          }
+          "writable": true
         }
       ],
       "args": [
@@ -1459,29 +1320,24 @@ export type SwivPrivacy = {
       ],
       "accounts": [
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1518,29 +1374,24 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1573,28 +1424,23 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1639,25 +1485,7 @@ export type SwivPrivacy = {
           "writable": true
         },
         {
-          "name": "pool",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "user_bet.pool_identifier",
-                "account": "userBet"
-              }
-            ]
-          }
+          "name": "pool"
         }
       ],
       "args": [
@@ -1686,29 +1514,24 @@ export type SwivPrivacy = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1737,19 +1560,6 @@ export type SwivPrivacy = {
   ],
   "accounts": [
     {
-      "name": "globalConfig",
-      "discriminator": [
-        149,
-        8,
-        156,
-        202,
-        160,
-        252,
-        176,
-        217
-      ]
-    },
-    {
       "name": "pool",
       "discriminator": [
         241,
@@ -1760,6 +1570,19 @@ export type SwivPrivacy = {
         177,
         109,
         188
+      ]
+    },
+    {
+      "name": "protocol",
+      "discriminator": [
+        45,
+        39,
+        101,
+        43,
+        115,
+        72,
+        131,
+        40
       ]
     },
     {
@@ -1947,32 +1770,6 @@ export type SwivPrivacy = {
       ]
     },
     {
-      "name": "poolSecretsDelegated",
-      "discriminator": [
-        206,
-        56,
-        176,
-        117,
-        52,
-        5,
-        143,
-        222
-      ]
-    },
-    {
-      "name": "poolSecretsUndelegated",
-      "discriminator": [
-        12,
-        188,
-        186,
-        95,
-        104,
-        237,
-        166,
-        136
-      ]
-    },
-    {
       "name": "poolUndelegated",
       "discriminator": [
         223,
@@ -2048,43 +1845,43 @@ export type SwivPrivacy = {
     },
     {
       "code": 6004,
-      "name": "alreadySettled",
-      "msg": "Bet is already settled."
+      "name": "alreadyClaimed",
+      "msg": "Bet is already claimed."
     },
     {
       "code": 6005,
+      "name": "weightsAlreadyFinalized",
+      "msg": "Weights have already been finalized."
+    },
+    {
+      "code": 6006,
       "name": "betAlreadyInitialized",
       "msg": "Bet is already initialized."
     },
     {
-      "code": 6006,
+      "code": 6007,
       "name": "durationTooShort",
       "msg": "Bet duration is too short."
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "invalidAsset",
       "msg": "Invalid asset symbol."
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "assetNotWhitelisted",
       "msg": "Asset is not whitelisted."
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "seedMismatch",
       "msg": "Seeds do not result in a valid address."
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "poolMismatch",
       "msg": "Bet does not match the current pool/asset config"
-    },
-    {
-      "code": 6011,
-      "name": "invalidPrivateKey",
-      "msg": "Private Key must be 32 bytes long."
     },
     {
       "code": 6012,
@@ -2105,11 +1902,6 @@ export type SwivPrivacy = {
       "code": 6015,
       "name": "undelegationTooEarly",
       "msg": "You must wait for the pool to end before undelegating to preserve privacy."
-    },
-    {
-      "code": 6016,
-      "name": "decryptionFailed",
-      "msg": "TEE failed to decrypt the prediction."
     }
   ],
   "types": [
@@ -2236,7 +2028,7 @@ export type SwivPrivacy = {
             "name": "calculated"
           },
           {
-            "name": "settled"
+            "name": "claimed"
           }
         ]
       }
@@ -2273,6 +2065,10 @@ export type SwivPrivacy = {
           {
             "name": "user",
             "type": "pubkey"
+          },
+          {
+            "name": "poolIdentifier",
+            "type": "string"
           }
         ]
       }
@@ -2293,38 +2089,6 @@ export type SwivPrivacy = {
             "type": {
               "option": "u64"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "globalConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "admin",
-            "type": "pubkey"
-          },
-          {
-            "name": "treasuryWallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "protocolFeeBps",
-            "type": "u64"
-          },
-          {
-            "name": "paused",
-            "type": "bool"
-          },
-          {
-            "name": "totalUsers",
-            "type": "u64"
-          },
-          {
-            "name": "batchSettleWaitDuration",
-            "type": "i64"
           }
         ]
       }
@@ -2375,6 +2139,10 @@ export type SwivPrivacy = {
             "type": "string"
           },
           {
+            "name": "poolId",
+            "type": "u64"
+          },
+          {
             "name": "tokenMint",
             "type": "pubkey"
           },
@@ -2423,6 +2191,10 @@ export type SwivPrivacy = {
           {
             "name": "weightFinalized",
             "type": "bool"
+          },
+          {
+            "name": "totalParticipants",
+            "type": "u64"
           },
           {
             "name": "bump",
@@ -2484,38 +2256,6 @@ export type SwivPrivacy = {
       }
     },
     {
-      "name": "poolSecretsDelegated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "poolAddress",
-            "type": "pubkey"
-          },
-          {
-            "name": "secretsAddress",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "poolSecretsUndelegated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "poolAddress",
-            "type": "pubkey"
-          },
-          {
-            "name": "secretsAddress",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
       "name": "poolUndelegated",
       "type": {
         "kind": "struct",
@@ -2523,6 +2263,42 @@ export type SwivPrivacy = {
           {
             "name": "poolAddress",
             "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "protocol",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasuryWallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocolFeeBps",
+            "type": "u64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "totalUsers",
+            "type": "u64"
+          },
+          {
+            "name": "batchSettleWaitDuration",
+            "type": "i64"
+          },
+          {
+            "name": "totalPools",
+            "type": "u64"
           }
         ]
       }
@@ -2573,8 +2349,8 @@ export type SwivPrivacy = {
             "type": "pubkey"
           },
           {
-            "name": "poolIdentifier",
-            "type": "string"
+            "name": "pool",
+            "type": "pubkey"
           },
           {
             "name": "deposit",

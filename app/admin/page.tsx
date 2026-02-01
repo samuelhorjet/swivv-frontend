@@ -1,371 +1,429 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   PublicKey,
   SystemProgram,
-  SYSVAR_RENT_PUBKEY,
   TransactionMessage,
   VersionedTransaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
+import {
+  TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddress,
+  unpackAccount,
+} from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useProgram } from "../../hooks/useProgram";
 import {
-  SEED_GLOBAL_CONFIG,
+  SEED_PROTOCOL,
   SEED_POOL,
   SEED_POOL_VAULT,
 } from "../../utils/contants";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import Link from "next/link";
+import { ProtocolAccount } from "../../types/swiv";
 
-// --- TYPE FOR BALANCES ---
-type TokenBalance = {
-  mint: string;
-  amount: number;
-  decimals: number;
-};
+type TabType = "Create" | "Config" | "Management" | "Treasury";
 
 export default function AdminPage() {
-  const { program, connection } = useProgram();
-  const { publicKey, sendTransaction } = useWallet();
+  const { program, wallet, connection } = useProgram();
 
-  // App State
-  const [activeTab, setActiveTab] = useState("create");
+  // UI State
+  const [activeTab, setActiveTab] = useState<TabType>("Create");
   const [loading, setLoading] = useState(false);
-  const [protocolInitialized, setProtocolInitialized] = useState<
-    boolean | null
-  >(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [treasuryAddress, setTreasuryAddress] = useState<string>("");
-  const [protocolFee, setProtocolFee] = useState<number>(0);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [protocolData, setProtocolData] = useState<ProtocolAccount | null>(
+    null,
+  );
+  const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [treasuryBalances, setTreasuryBalances] = useState<
+    { mint: string; balance: number }[]
+  >([]);
 
-  // --- NEW: Treasury Balances State (Array) ---
-  const [treasuryBalances, setTreasuryBalances] = useState<TokenBalance[]>([]);
-
-  // Forms
+  // Form States
   const [poolName, setPoolName] = useState("");
   const [mintAddress, setMintAddress] = useState("");
   const [durationSeconds, setDurationSeconds] = useState(300);
   const [startDelay, setStartDelay] = useState(0);
   const [accuracyBuffer, setAccuracyBuffer] = useState(500);
   const [metadata, setMetadata] = useState("BTC/USDC");
-
-  // Config Forms
   const [newFee, setNewFee] = useState("");
   const [newTreasury, setNewTreasury] = useState("");
   const [newAdmin, setNewAdmin] = useState("");
 
-  // --- 1. AUTO-LOAD LAST USED MINT (Convenience only) ---
-  useEffect(() => {
-    const saved = localStorage.getItem("swiv_last_mint");
-    if (saved) setMintAddress(saved);
-  }, []);
-
-  const handleMintChange = (val: string) => {
-    setMintAddress(val);
-    localStorage.setItem("swiv_last_mint", val);
-  };
-
-  // --- HELPER: Send Versioned Transaction ---
-  const sendVersionedTx = useCallback(
-    async (instruction: TransactionInstruction) => {
-      if (!publicKey || !connection) throw new Error("Wallet not connected");
-
+  // --- VERSIONED TX HELPER ---
+  const sendV0Tx = async (instructions: TransactionInstruction[]) => {
+    if (!wallet || !connection) return;
+    try {
+      setLoading(true);
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash();
-
       const messageV0 = new TransactionMessage({
-        payerKey: publicKey,
+        payerKey: wallet.publicKey,
         recentBlockhash: blockhash,
-        instructions: [instruction],
+        instructions,
       }).compileToV0Message();
 
       const transaction = new VersionedTransaction(messageV0);
-      const signature = await sendTransaction(transaction, connection);
+      const signed = await wallet.signTransaction(transaction);
+      const txid = await connection.sendRawTransaction(signed.serialize());
 
-      const confirmation = await connection.confirmTransaction({
-        signature,
+      await connection.confirmTransaction({
+        signature: txid,
         blockhash,
         lastValidBlockHeight,
       });
-
-      if (confirmation.value.err) throw new Error("Transaction failed");
-
-      return signature;
-    },
-    [publicKey, connection, sendTransaction],
-  );
-
-  // 2. Check Protocol Status
-  useEffect(() => {
-    if (!program || !publicKey) return;
-
-    const checkStatus = async () => {
-      setLoading(true);
-      try {
-        const [configPda] = PublicKey.findProgramAddressSync(
-          [SEED_GLOBAL_CONFIG],
-          program.programId,
-        );
-
-        const configAccount =
-          await program.account.globalConfig.fetch(configPda);
-
-        setProtocolInitialized(true);
-        setTreasuryAddress(configAccount.treasuryWallet.toBase58());
-        setProtocolFee(configAccount.protocolFeeBps.toNumber());
-        setIsPaused(configAccount.paused);
-        setIsAdmin(configAccount.admin.toBase58() === publicKey.toBase58());
-      } catch (error: unknown) {
-        const errMsg = error instanceof Error ? error.message : "Unknown error";
-        if (
-          errMsg.includes("Account does not exist") ||
-          errMsg.includes("AccountNotInitialized")
-        ) {
-          setProtocolInitialized(false);
-        } else {
-          console.error("Error fetching config:", error);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkStatus();
-  }, [program, publicKey]);
-
-  // --- 3. AUTO-SCAN TREASURY BALANCES (The Fix) ---
-  useEffect(() => {
-    if (activeTab === "treasury" && treasuryAddress && connection) {
-      const fetchAllBalances = async () => {
-        try {
-          const pubkey = new PublicKey(treasuryAddress);
-
-          // Fetch ALL token accounts owned by the treasury
-          const accounts = await connection.getParsedTokenAccountsByOwner(
-            pubkey,
-            { programId: TOKEN_PROGRAM_ID },
-          );
-
-          const foundBalances: TokenBalance[] = accounts.value
-            .map((item) => {
-              const info = item.account.data.parsed.info;
-              return {
-                mint: info.mint,
-                amount: info.tokenAmount.uiAmount || 0,
-                decimals: info.tokenAmount.decimals,
-              };
-            })
-            .filter((b) => b.amount > 0); // Only show tokens with balance > 0
-
-          setTreasuryBalances(foundBalances);
-        } catch (e) {
-          console.error("Error fetching treasury balances:", e);
-        }
-      };
-      fetchAllBalances();
-    }
-  }, [activeTab, treasuryAddress, connection]);
-
-  // --- ACTIONS ---
-
-  const initializeProtocol = async () => {
-    if (!program || !publicKey) return;
-    try {
-      setLoading(true);
-      const [configPda] = PublicKey.findProgramAddressSync(
-        [SEED_GLOBAL_CONFIG],
-        program.programId,
-      );
-
-      const ix = await program.methods
-        .initializeProtocol(new anchor.BN(300))
-        .accountsPartial({
-          admin: publicKey,
-          treasuryWallet: publicKey,
-          systemProgram: SystemProgram.programId,
-          globalConfig: configPda,
-        })
-        .instruction();
-
-      await sendVersionedTx(ix);
-      alert("Success! Reloading...");
+      alert("Transaction Successful!");
       window.location.reload();
-    } catch (error) {
-      console.error(error);
-      alert("Initialization Failed.");
+    } catch (e: unknown) {
+      console.error(e);
+      alert("Error: " + (e instanceof Error ? e.message : "Unknown error"));
     } finally {
       setLoading(false);
     }
   };
 
-  const createPool = async () => {
-    if (!program || !publicKey) return;
+  useEffect(() => {
+    if (!program || !wallet || !connection) return;
+    const loadData = async () => {
+      try {
+        const [protocolPda] = PublicKey.findProgramAddressSync(
+          [SEED_PROTOCOL],
+          program.programId,
+        );
+        
+        // --- CHECK IF PROTOCOL EXISTS ---
+        const protocolInfo = await connection.getAccountInfo(protocolPda);
+        
+        if (!protocolInfo) {
+          // Protocol not found: Let them in so they can click "Initialize"
+          setIsInitialized(false);
+          setIsAdmin(true); 
+          return;
+        }
+
+        const account = (await program.account.protocol.fetch(protocolPda)) as ProtocolAccount;
+        setProtocolData(account);
+        setIsInitialized(true);
+        
+        // Access Check: Compare connected wallet to protocol admin
+        const connectedWalletStr = wallet.publicKey.toBase58();
+        const adminWalletStr = account.admin.toBase58();
+        setIsAdmin(connectedWalletStr === adminWalletStr);
+
+        // Fetch Treasury Balances
+        const tokenAccounts = await connection.getTokenAccountsByOwner(
+          account.treasuryWallet,
+          { programId: TOKEN_PROGRAM_ID },
+        );
+        const balances = tokenAccounts.value.map((ta) => {
+          const data = unpackAccount(ta.pubkey, ta.account);
+          return { mint: data.mint.toBase58(), balance: Number(data.amount) / 1e6 };
+        });
+        setTreasuryBalances(balances);
+      } catch (error: unknown) {
+        console.error("Fetch error:", error);
+        setIsInitialized(false);
+        setIsAdmin(false);
+      }
+    };
+    loadData();
+  }, [program, wallet, connection]);
+
+  // --- RENDERING ACCESS STATES ---
+
+  if (!wallet)
+    return (
+      <div className="min-h-screen bg-[#0b0f1a] flex flex-col justify-center items-center text-white">
+        <p className="mb-4 text-gray-400">Please connect your wallet to access Admin</p>
+        <WalletMultiButton />
+      </div>
+    );
+
+  // Allow access if protocol isn't initialized yet
+  if (isAdmin === false && isInitialized === true) {
+    return (
+      <div className="min-h-screen bg-[#0b0f1a] flex flex-col justify-center items-center text-white p-4">
+        <div className="bg-[#161b2c] p-10 rounded-xl border border-red-900/50 text-center shadow-2xl max-w-lg">
+            <h1 className="text-4xl font-black text-red-600 mb-2 uppercase">Access Denied</h1>
+            <p className="text-gray-400 mb-6">This wallet is not authorized to manage this protocol.</p>
+            <WalletMultiButton />
+        </div>
+      </div>
+    );
+  }
+
+  // --- SHOW INITIALIZE SETUP FORM IF EMPTY ---
+  if (isInitialized === false) {
+    return (
+      <div className="min-h-screen bg-[#0b0f1a] flex flex-col justify-center items-center text-white p-6">
+        <div className="bg-[#161b2c] p-8 md:p-12 rounded-2xl border border-blue-900/30 shadow-2xl max-w-lg w-full">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-black mb-2 uppercase tracking-tighter text-blue-400">Protocol Setup</h2>
+            <p className="text-gray-500 text-sm">No protocol state found for this Program ID. Initialize it now.</p>
+          </div>
+
+          <div className="space-y-5">
+            <div>
+              <label className="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Initial Admin & Payer</label>
+              <div className="bg-[#0b0f1a] p-3 rounded border border-gray-800 text-xs font-mono text-blue-300">
+                {wallet.publicKey.toBase58()}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Treasury Wallet Address</label>
+              <input 
+                type="text" 
+                className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm font-mono placeholder:text-gray-600 focus:border-blue-500 outline-none transition"
+                placeholder="Paste Treasury Pubkey"
+                value={newTreasury || wallet.publicKey.toBase58()} 
+                onChange={(e) => setNewTreasury(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Protocol Fee (in Basis Points)</label>
+              <input 
+                type="number" 
+                className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm placeholder:text-gray-600 focus:border-blue-500 outline-none transition"
+                placeholder="e.g. 500 for 5%"
+                value={newFee || "500"} 
+                onChange={(e) => setNewFee(e.target.value)}
+              />
+              <p className="text-[10px] text-gray-600 mt-1 italic">100 bps = 1%</p>
+            </div>
+
+            <button 
+              onClick={async () => {
+                if (!program || !wallet) return;
+                try {
+                  setLoading(true);
+                  const [protocolPda] = PublicKey.findProgramAddressSync([SEED_PROTOCOL], program.programId);
+                  
+                  // Use inputs from the form instead of hardcoded values
+                  const treasuryPubkey = newTreasury ? new PublicKey(newTreasury) : wallet.publicKey;
+                  const feeBps = new anchor.BN(newFee || 500);
+
+                  const ix = await program.methods
+                    .initializeProtocol(feeBps) 
+                    .accountsPartial({
+                      protocol: protocolPda,
+                      admin: wallet.publicKey,
+                      treasuryWallet: treasuryPubkey,
+                      systemProgram: SystemProgram.programId,
+                    })
+                    .instruction();
+
+                  await sendV0Tx([ix]);
+                } catch (e: unknown) {
+                  alert("Init Failed: " + (e instanceof Error ? e.message : "Check console"));
+                } finally {
+                  setLoading(false);
+                }
+              }} 
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white py-4 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20"
+            >
+              {loading ? "Initializing..." : "🚀 Launch Protocol"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAdmin === null) return <div className="min-h-screen bg-[#0b0f1a] flex justify-center items-center text-white font-mono uppercase tracking-widest animate-pulse">Checking Permissions...</div>;
+
+  // --- ACTIONS ---
+
+  const handleCreatePool = async () => {
+    if (!program || !wallet || !protocolData || !connection) return;
+
     try {
       setLoading(true);
       const startTime = Math.floor(Date.now() / 1000) + Number(startDelay);
       const endTime = startTime + Number(durationSeconds);
-      const poolNameBytes = Buffer.from(poolName);
-
+      const poolIdBuffer = protocolData.totalPools.toArrayLike(Buffer, "le", 8);
       const [poolPda] = PublicKey.findProgramAddressSync(
-        [SEED_POOL, poolNameBytes],
+        [SEED_POOL, wallet.publicKey.toBuffer(), poolIdBuffer],
         program.programId,
       );
       const [vaultPda] = PublicKey.findProgramAddressSync(
         [SEED_POOL_VAULT, poolPda.toBuffer()],
         program.programId,
       );
-
-      if (!mintAddress) {
-        alert("Please provide a Token Mint Address");
-        return;
-      }
+      const [protocolPda] = PublicKey.findProgramAddressSync(
+        [SEED_PROTOCOL],
+        program.programId,
+      );
 
       const mintPubkey = new PublicKey(mintAddress);
-      const adminAta = await getAssociatedTokenAddress(mintPubkey, publicKey);
+      const adminTokenAccount = await getAssociatedTokenAddress(
+        mintPubkey,
+        wallet.publicKey,
+      );
 
-      // Fix: Scale buffer to match 6 decimals
-      const scaledBuffer = new anchor.BN(accuracyBuffer * 1_000_000);
+      const ixs: TransactionInstruction[] = [];
 
-      const ix = await program.methods
+      // --- CHECK AND ADD ATA INITIALIZATION IF NEEDED ---
+      const ataInfo = await connection.getAccountInfo(adminTokenAccount);
+      if (!ataInfo) {
+        // Import createAssociatedTokenAccountInstruction from @solana/spl-token
+        const { createAssociatedTokenAccountInstruction } =
+          await import("@solana/spl-token");
+        ixs.push(
+          createAssociatedTokenAccountInstruction(
+            wallet.publicKey, // payer
+            adminTokenAccount, // ata address
+            wallet.publicKey, // owner
+            mintPubkey, // mint
+          ),
+        );
+      }
+
+      // FIX: SCALE ACCURACY BUFFER
+      // The contract does math in base units (decimals). 
+      // If result is 150*1e6 and bet is 50*1e6, diff is 100*1e6.
+      // We need buffer to be 500*1e6 to cover it.
+      const scaledBuffer = new anchor.BN(accuracyBuffer).mul(new anchor.BN(1_000_000));
+
+      const createPoolIx = await program.methods
         .createPool(
+          protocolData.totalPools,
           poolName,
           metadata,
           new anchor.BN(startTime),
           new anchor.BN(endTime),
-          scaledBuffer,
+          scaledBuffer, // <--- CHANGED HERE
           new anchor.BN(1000),
         )
         .accountsPartial({
-          globalConfig: PublicKey.findProgramAddressSync(
-            [SEED_GLOBAL_CONFIG],
-            program.programId,
-          )[0],
+          protocol: protocolPda,
           pool: poolPda,
           poolVault: vaultPda,
           tokenMint: mintPubkey,
-          admin: publicKey,
-          adminTokenAccount: adminAta,
+          admin: wallet.publicKey,
+          adminTokenAccount: adminTokenAccount,
           tokenProgram: TOKEN_PROGRAM_ID,
           systemProgram: SystemProgram.programId,
-          rent: SYSVAR_RENT_PUBKEY,
         })
         .instruction();
 
-      await sendVersionedTx(ix);
-      alert(`Pool "${poolName}" created successfully!`);
-    } catch (error) {
-      console.error("Pool Creation Error:", error);
-      alert("Failed to create pool.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      ixs.push(createPoolIx);
 
-  const updateConfig = async () => {
-    if (!program || !publicKey) return;
-    try {
-      setLoading(true);
-      const [configPda] = PublicKey.findProgramAddressSync(
-        [SEED_GLOBAL_CONFIG],
-        program.programId,
-      );
-
-      const newTreasuryKey = newTreasury ? new PublicKey(newTreasury) : null;
-      const newFeeBn = newFee ? new anchor.BN(newFee) : null;
-
-      const ix = await program.methods
-        .updateConfig(newTreasuryKey, newFeeBn)
-        .accountsPartial({
-          admin: publicKey,
-          globalConfig: configPda,
-          systemProgram: SystemProgram.programId,
-        })
-        .instruction();
-
-      await sendVersionedTx(ix);
-      alert("Config updated!");
-      window.location.reload();
-    } catch (e) {
+      // Send as a single Versioned Transaction
+      await sendV0Tx(ixs);
+    } catch (e: unknown) {
       console.error(e);
-      alert("Update failed.");
+      alert("Error: " + (e instanceof Error ? e.message : "Unknown error"));
     } finally {
       setLoading(false);
     }
   };
 
-  const togglePause = async () => {
-    if (!program || !publicKey) return;
-    try {
-      setLoading(true);
-      const [configPda] = PublicKey.findProgramAddressSync(
-        [SEED_GLOBAL_CONFIG],
-        program.programId,
-      );
-      const ix = await program.methods
-        .setPause(!isPaused)
-        .accountsPartial({
-          admin: publicKey,
-          globalConfig: configPda,
-        })
-        .instruction();
-
-      await sendVersionedTx(ix);
-      setIsPaused(!isPaused);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const handleUpdateConfig = async () => {
+    if (!program || !wallet) return;
+    const [protocolPda] = PublicKey.findProgramAddressSync(
+      [SEED_PROTOCOL],
+      program.programId,
+    );
+    const ix = await program.methods
+      .updateConfig(
+        newTreasury ? new PublicKey(newTreasury) : null,
+        newFee ? new anchor.BN(newFee) : null,
+      )
+      .accountsPartial({
+        admin: wallet.publicKey,
+        protocol: protocolPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+    await sendV0Tx([ix]);
   };
 
-  const transferAdmin = async () => {
-    if (!program || !publicKey || !newAdmin) return;
-    try {
-      setLoading(true);
-      const [configPda] = PublicKey.findProgramAddressSync(
-        [SEED_GLOBAL_CONFIG],
-        program.programId,
-      );
-      const ix = await program.methods
-        .transferAdmin(new PublicKey(newAdmin))
-        .accountsPartial({
-          currentAdmin: publicKey,
-          globalConfig: configPda,
-        })
-        .instruction();
+  const handleTogglePause = async () => {
+    if (!program || !wallet || !protocolData) return;
+    const [protocolPda] = PublicKey.findProgramAddressSync(
+      [SEED_PROTOCOL],
+      program.programId,
+    );
 
-      await sendVersionedTx(ix);
-      alert("Admin transferred!");
-      window.location.reload();
-    } catch (e) {
-      console.error(e);
-      alert("Transfer failed.");
-    } finally {
-      setLoading(false);
-    }
+    // Toggle logic: If currently paused (true), send false. If not paused (false), send true.
+    const newPauseState = !protocolData.paused;
+
+    const ix = await program.methods
+      .setPause(newPauseState)
+      .accountsPartial({ admin: wallet.publicKey, protocol: protocolPda })
+      .instruction();
+    await sendV0Tx([ix]);
   };
 
-  if (!publicKey)
+  const handleTransfer = async () => {
+    if (!program || !wallet || !newAdmin) return;
+    const [protocolPda] = PublicKey.findProgramAddressSync(
+      [SEED_PROTOCOL],
+      program.programId,
+    );
+    const ix = await program.methods
+      .transferAdmin(new PublicKey(newAdmin))
+      .accountsPartial({
+        currentAdmin: wallet.publicKey,
+        protocol: protocolPda,
+      })
+      .instruction();
+    await sendV0Tx([ix]);
+  };
+
+  // --- RENDERING ACCESS STATES ---
+
+  if (!wallet)
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
-        <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      <div className="min-h-screen bg-[#0b0f1a] flex flex-col justify-center items-center text-white">
+        <p className="mb-4 text-gray-400">
+          Please connect your wallet to access Admin
+        </p>
         <WalletMultiButton />
       </div>
     );
 
+  if (isAdmin === false) {
+    return (
+      <div className="min-h-screen bg-[#0b0f1a] flex flex-col justify-center items-center text-white">
+        <div className="bg-[#161b2c] p-10 rounded-xl border border-red-900/50 text-center shadow-2xl">
+          <h1 className="text-4xl font-black text-red-600 mb-2">
+            ACCESS DENIED
+          </h1>
+          <p className="text-gray-400 max-w-sm mx-auto">
+            This wallet ({wallet.publicKey.toBase58().slice(0, 6)}...) is not
+            authorized to access the protocol management console.
+          </p>
+          <div className="mt-8">
+            <WalletMultiButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAdmin === null)
+    return (
+      <div className="min-h-screen bg-[#0b0f1a] flex justify-center items-center text-white font-mono uppercase tracking-widest animate-pulse">
+        Checking Permissions...
+      </div>
+    );
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <header className="flex justify-between items-center mb-10 border-b border-gray-700 pb-4">
-        <h1 className="text-2xl font-bold">Swiv Privacy: Admin</h1>
+    <div className="min-h-screen bg-[#0b0f1a] text-white p-8 font-sans">
+      <header className="max-w-5xl mx-auto flex justify-between items-center mb-12">
+        <h1 className="text-2xl font-black tracking-tight">
+          Swiv Privacy: Admin
+        </h1>
         <div className="flex gap-4">
           <Link
             href="/admin/pools"
-            className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm transition"
+            className="bg-[#1e243a] hover:bg-gray-800 px-4 py-2 rounded text-xs font-bold transition"
           >
             View All Pools
           </Link>
@@ -373,279 +431,264 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto space-y-8">
-        {protocolInitialized === false ? (
-          <div className="bg-yellow-900/30 border border-yellow-600 p-8 rounded text-center">
-            <h2 className="text-2xl font-bold mb-4">Welcome to Swiv Privacy</h2>
+      <main className="max-w-4xl mx-auto">
+        {/* TAB NAVIGATION */}
+        <div className="flex border-b border-gray-800 mb-8 gap-8">
+          {["Create", "Config", "Management", "Treasury"].map((tab) => (
             <button
-              onClick={initializeProtocol}
-              disabled={loading}
-              className="bg-yellow-600 hover:bg-yellow-500 text-white px-8 py-3 rounded font-bold transition"
+              key={tab}
+              onClick={() => setActiveTab(tab as TabType)}
+              className={`pb-4 text-sm font-bold transition-all ${activeTab === tab ? "border-b-2 border-blue-500 text-blue-400" : "text-gray-500 hover:text-white"}`}
             >
-              {loading ? "Initializing..." : "Initialize Protocol"}
+              {tab}
             </button>
-          </div>
-        ) : (
-          <>
-            <div className="flex border-b border-gray-700 mb-6">
-              {["create", "config", "management", "treasury"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-3 font-medium capitalize ${
-                    activeTab === tab
-                      ? "border-b-2 border-blue-500 text-blue-400"
-                      : "text-gray-400 hover:text-white"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
+          ))}
+        </div>
 
-            {!isAdmin && (
-              <div className="bg-red-900/50 border border-red-500 p-4 rounded text-center">
-                ⛔ ACCESS DENIED: View Only Mode
-              </div>
-            )}
-
-            {activeTab === "create" && isAdmin && (
-              <section className="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 className="text-xl font-semibold mb-6">Create Pool</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm text-gray-400">
-                        Pool Name
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-gray-700 rounded p-2"
-                        value={poolName}
-                        onChange={(e) => setPoolName(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400">
-                        Metadata
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-gray-700 rounded p-2"
-                        value={metadata}
-                        onChange={(e) => setMetadata(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400">
-                        Mint Address
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full bg-gray-700 rounded p-2"
-                        value={mintAddress}
-                        onChange={(e) => handleMintChange(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm text-gray-400">
-                          Delay (s)
-                        </label>
-                        <input
-                          type="number"
-                          className="w-full bg-gray-700 rounded p-2"
-                          value={startDelay}
-                          onChange={(e) =>
-                            setStartDelay(Number(e.target.value))
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-gray-400">
-                          Duration (s)
-                        </label>
-                        <input
-                          type="number"
-                          className="w-full bg-gray-700 rounded p-2"
-                          value={durationSeconds}
-                          onChange={(e) =>
-                            setDurationSeconds(Number(e.target.value))
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm text-gray-400">
-                        Accuracy Buffer
+        <div className="bg-[#161b2c] border border-gray-800 rounded-xl p-8 shadow-2xl">
+          {/* CREATE TAB */}
+          {activeTab === "Create" && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold mb-6">Create Pool</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <label className="text-[10px] text-gray-500 uppercase font-bold">
+                    Pool Name
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm"
+                    placeholder="BTC Moonshot"
+                    value={poolName}
+                    onChange={(e) => setPoolName(e.target.value)}
+                  />
+                  <label className="text-[10px] text-gray-500 uppercase font-bold">
+                    Metadata
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm"
+                    value={metadata}
+                    onChange={(e) => setMetadata(e.target.value)}
+                  />
+                  <label className="text-[10px] text-gray-500 uppercase font-bold">
+                    Mint Address
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm font-mono"
+                    placeholder="USDC Mint"
+                    value={mintAddress}
+                    onChange={(e) => setMintAddress(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="text-[10px] text-gray-500 uppercase font-bold">
+                        Delay (s)
                       </label>
                       <input
                         type="number"
-                        className="w-full bg-gray-700 rounded p-2"
-                        value={accuracyBuffer}
+                        className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm"
+                        value={startDelay}
+                        onChange={(e) => setStartDelay(Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-[10px] text-gray-500 uppercase font-bold">
+                        Duration (s)
+                      </label>
+                      <input
+                        type="number"
+                        className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm"
+                        value={durationSeconds}
                         onChange={(e) =>
-                          setAccuracyBuffer(Number(e.target.value))
+                          setDurationSeconds(Number(e.target.value))
                         }
                       />
                     </div>
-                    <button
-                      onClick={createPool}
-                      disabled={loading}
-                      className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded mt-2"
-                    >
-                      {loading ? "Creating..." : "Create Pool"}
-                    </button>
                   </div>
+                  <label className="text-[10px] text-gray-500 uppercase font-bold">
+                    Accuracy Buffer (Absolute Value)
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm"
+                    value={accuracyBuffer}
+                    onChange={(e) => setAccuracyBuffer(Number(e.target.value))}
+                  />
+                  <p className="text-[9px] text-gray-500">
+                    Example: If target is 150 and you want 50-250 to win, set buffer to 100. (It will be scaled automatically).
+                  </p>
+                  <button
+                    onClick={handleCreatePool}
+                    disabled={loading}
+                    className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-lg font-black text-sm uppercase transition-all mt-4"
+                  >
+                    Create Pool
+                  </button>
                 </div>
-              </section>
-            )}
+              </div>
+            </div>
+          )}
 
-            {activeTab === "config" && isAdmin && (
-              <section className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
-                <div className="grid grid-cols-2 gap-4 text-sm bg-gray-900 p-4 rounded">
-                  <div>
-                    <span className="text-gray-500">Current Fee:</span>{" "}
-                    <span className="text-white ml-2">
-                      {protocolFee} bps ({protocolFee / 100}%)
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Current Treasury:</span>{" "}
-                    <span className="text-white ml-2 text-xs">
-                      {treasuryAddress}
-                    </span>
-                  </div>
+          {/* CONFIG TAB */}
+          {activeTab === "Config" && (
+            <div className="space-y-8">
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-[#0b0f1a] p-4 rounded border border-gray-800">
+                  <span className="text-[10px] text-gray-500 uppercase font-bold">
+                    Current Fee:
+                  </span>
+                  <p className="text-white font-bold">
+                    {protocolData?.protocolFeeBps.toString()} bps (
+                    {(Number(protocolData?.protocolFeeBps || 0) / 100).toFixed(
+                      1,
+                    )}
+                    %)
+                  </p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm text-gray-400">
-                      New Protocol Fee (bps)
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full bg-gray-700 rounded p-2 mt-1"
-                      value={newFee}
-                      onChange={(e) => setNewFee(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400">
-                      New Treasury Address
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full bg-gray-700 rounded p-2 mt-1"
-                      value={newTreasury}
-                      onChange={(e) => setNewTreasury(e.target.value)}
-                    />
-                  </div>
+                <div className="bg-[#0b0f1a] p-4 rounded border border-gray-800">
+                  <span className="text-[10px] text-gray-500 uppercase font-bold">
+                    Current Treasury:
+                  </span>
+                  <p className="text-white font-mono text-[10px] truncate">
+                    {protocolData?.treasuryWallet.toBase58()}
+                  </p>
                 </div>
-                <button
-                  onClick={updateConfig}
-                  disabled={loading}
-                  className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded"
-                >
-                  Update Config
-                </button>
-              </section>
-            )}
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] text-gray-500 uppercase font-bold">
+                    New Protocol Fee (bps)
+                  </label>
+                  <input
+                    type="number"
+                    className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm"
+                    placeholder="e.g. 500"
+                    value={newFee}
+                    onChange={(e) => setNewFee(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] text-gray-500 uppercase font-bold">
+                    New Treasury Address
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-[#1e243a] p-3 rounded border border-gray-700 text-sm font-mono"
+                    placeholder="Pubkey"
+                    value={newTreasury}
+                    onChange={(e) => setNewTreasury(e.target.value)}
+                  />
+                </div>
+              </div>
+              <button
+                onClick={handleUpdateConfig}
+                className="bg-green-600 hover:bg-green-500 px-6 py-3 rounded font-bold text-sm"
+              >
+                Update Config
+              </button>
+            </div>
+          )}
 
-            {activeTab === "management" && isAdmin && (
-              <section className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-8">
-                <div className="border-b border-gray-700 pb-6">
-                  <h3 className="font-bold mb-4">Emergency Controls</h3>
-                  <div className="flex items-center justify-between bg-gray-900 p-4 rounded">
-                    <div>
-                      <p className="font-bold">
-                        Protocol State:{" "}
-                        <span
-                          className={
-                            isPaused ? "text-red-500" : "text-green-500"
-                          }
-                        >
-                          {isPaused ? "PAUSED" : "ACTIVE"}
+          {/* MANAGEMENT TAB */}
+          {activeTab === "Management" && (
+            <div className="space-y-12">
+              <div>
+                <h3 className="text-sm font-bold mb-4 uppercase tracking-widest text-gray-500">
+                  Emergency Controls
+                </h3>
+                <div className="bg-[#0b0f1a] p-6 rounded border border-gray-800 flex justify-between items-center">
+                  <div>
+                    <p className="font-bold flex items-center gap-2">
+                      Protocol State:{" "}
+                      {protocolData?.paused ? (
+                        <span className="text-red-500 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>{" "}
+                          PAUSED
                         </span>
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Pausing stops all new bets.
-                      </p>
-                    </div>
-                    <button
-                      onClick={togglePause}
-                      className={`px-4 py-2 rounded font-bold ${
-                        isPaused ? "bg-green-600" : "bg-red-600"
-                      }`}
-                    >
-                      {isPaused ? "Resume Protocol" : "Pause Protocol"}
-                    </button>
+                      ) : (
+                        <span className="text-green-500 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>{" "}
+                          ACTIVE
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {protocolData?.paused
+                        ? "Protocol is currently locked. Unpause to resume bets."
+                        : "Pausing stops all new bets."}
+                    </p>
                   </div>
+                  <button
+                    onClick={handleTogglePause}
+                    disabled={loading}
+                    className={`px-6 py-2 rounded font-bold text-sm transition-all ${protocolData?.paused ? "bg-green-600 hover:bg-green-500" : "bg-red-600 hover:bg-red-500"}`}
+                  >
+                    {protocolData?.paused
+                      ? "Unpause Protocol"
+                      : "Pause Protocol"}
+                  </button>
                 </div>
-                <div>
-                  <h3 className="font-bold mb-4 text-red-400">
-                    Danger Zone: Transfer Ownership
-                  </h3>
-                  <div className="flex gap-4">
-                    <input
-                      type="text"
-                      className="flex-1 bg-gray-700 rounded p-2"
-                      placeholder="New Admin Pubkey"
-                      value={newAdmin}
-                      onChange={(e) => setNewAdmin(e.target.value)}
-                    />
-                    <button
-                      onClick={transferAdmin}
-                      disabled={!newAdmin}
-                      className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded"
-                    >
-                      Transfer
-                    </button>
-                  </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold mb-4 text-red-500 uppercase tracking-widest">
+                  Danger Zone: Transfer Ownership
+                </h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    className="flex-1 bg-[#1e243a] p-3 rounded border border-gray-700 text-sm font-mono"
+                    placeholder="New Admin Pubkey"
+                    value={newAdmin}
+                    onChange={(e) => setNewAdmin(e.target.value)}
+                  />
+                  <button
+                    onClick={handleTransfer}
+                    className="bg-red-600 px-6 py-2 rounded font-bold text-sm"
+                  >
+                    Transfer
+                  </button>
                 </div>
-              </section>
-            )}
+              </div>
+            </div>
+          )}
 
-            {activeTab === "treasury" && isAdmin && (
-              <section className="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-                <h2 className="text-xl font-semibold mb-4">
-                  Treasury Vault Assets
-                </h2>
-                <div className="space-y-4">
-                  {treasuryBalances.length === 0 ? (
-                    <div className="bg-gray-900 p-6 rounded-lg">
-                      <p className="text-gray-400">
-                        No assets found or loading...
-                      </p>
-                      <p className="text-xs text-gray-600 mt-2">
-                        {treasuryAddress}
-                      </p>
-                    </div>
-                  ) : (
-                    treasuryBalances.map((bal, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-gray-900 p-6 rounded-lg inline-block min-w-75 mx-2"
-                      >
-                        <p className="text-gray-400 text-sm mb-2">
-                          Balance (Mint: {bal.mint.slice(0, 4)}...
-                          {bal.mint.slice(-4)})
-                        </p>
-                        <p className="text-4xl font-bold text-green-400">
-                          {bal.amount.toLocaleString()}{" "}
-                          <span className="text-lg text-gray-500">Tokens</span>
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <p className="text-sm text-gray-500 mt-6">
-                  These are all tokens currently held by the Treasury Wallet.
-                </p>
-              </section>
-            )}
-          </>
-        )}
+          {/* TREASURY TAB */}
+          {activeTab === "Treasury" && (
+            <div className="space-y-6 text-center">
+              <h2 className="text-xl font-bold mb-8">Treasury Vault Assets</h2>
+              <div className="grid grid-cols-2 gap-4">
+                {treasuryBalances.map((b, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-[#0b0f1a] p-8 rounded-xl border border-gray-800 transition hover:border-gray-600"
+                  >
+                    <p className="text-[10px] text-gray-500 font-mono mb-2">
+                      Balance (Mint: {b.mint.slice(0, 4)}...{b.mint.slice(-4)})
+                    </p>
+                    <p className="text-3xl font-black text-green-500 mb-1">
+                      {b.balance.toLocaleString()}
+                    </p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                      Tokens
+                    </p>
+                  </div>
+                ))}
+                {treasuryBalances.length === 0 && (
+                  <div className="col-span-2 text-gray-600 py-10">
+                    No assets found in treasury
+                  </div>
+                )}
+              </div>
+              <p className="text-[10px] text-gray-600 mt-8 italic text-center">
+                These are all tokens currently held by the Treasury Wallet.
+              </p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

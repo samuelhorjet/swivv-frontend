@@ -1,5 +1,5 @@
 {
-  "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U",
+  "address": "5e4e9pooJgus8NcgdwZitZx1kF2vWZEA7MCTGi7BuKag",
   "metadata": {
     "name": "swiv_privacy",
     "version": "0.1.0",
@@ -41,7 +41,12 @@
               },
               {
                 "kind": "account",
-                "path": "pool.name",
+                "path": "pool.admin",
+                "account": "Pool"
+              },
+              {
+                "kind": "account",
+                "path": "pool.pool_id",
                 "account": "Pool"
               }
             ]
@@ -70,25 +75,7 @@
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "Pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "magic_program",
@@ -122,25 +109,7 @@
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "Pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "pool_vault",
@@ -244,29 +213,24 @@
       ],
       "accounts": [
         {
-          "name": "global_config",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -287,8 +251,12 @@
                 ]
               },
               {
+                "kind": "account",
+                "path": "admin"
+              },
+              {
                 "kind": "arg",
-                "path": "name"
+                "path": "pool_id"
               }
             ]
           }
@@ -346,6 +314,10 @@
         }
       ],
       "args": [
+        {
+          "name": "pool_id",
+          "type": "u64"
+        },
         {
           "name": "name",
           "type": "string"
@@ -419,38 +391,38 @@
             "program": {
               "kind": "const",
               "value": [
-                87,
-                78,
-                245,
-                196,
-                254,
-                150,
-                243,
-                214,
-                191,
                 68,
-                66,
-                225,
-                72,
-                218,
-                23,
-                164,
-                243,
-                76,
-                135,
-                17,
-                53,
-                2,
-                181,
+                237,
                 90,
-                82,
-                64,
-                56,
-                230,
-                35,
-                17,
-                214,
-                127
+                161,
+                163,
+                164,
+                94,
+                195,
+                121,
+                3,
+                42,
+                107,
+                180,
+                216,
+                83,
+                176,
+                141,
+                109,
+                23,
+                213,
+                169,
+                2,
+                102,
+                215,
+                1,
+                116,
+                15,
+                26,
+                143,
+                157,
+                110,
+                105
               ]
             }
           }
@@ -535,7 +507,7 @@
         },
         {
           "name": "owner_program",
-          "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U"
+          "address": "5e4e9pooJgus8NcgdwZitZx1kF2vWZEA7MCTGi7BuKag"
         },
         {
           "name": "delegation_program",
@@ -634,28 +606,23 @@
           "signer": true
         },
         {
-          "name": "global_config",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -685,38 +652,38 @@
             "program": {
               "kind": "const",
               "value": [
-                87,
-                78,
-                245,
-                196,
-                254,
-                150,
-                243,
-                214,
-                191,
                 68,
-                66,
-                225,
-                72,
-                218,
-                23,
-                164,
-                243,
-                76,
-                135,
-                17,
-                53,
-                2,
-                181,
+                237,
                 90,
-                82,
-                64,
-                56,
-                230,
-                35,
-                17,
-                214,
-                127
+                161,
+                163,
+                164,
+                94,
+                195,
+                121,
+                3,
+                42,
+                107,
+                180,
+                216,
+                83,
+                176,
+                141,
+                109,
+                23,
+                213,
+                169,
+                2,
+                102,
+                215,
+                1,
+                116,
+                15,
+                26,
+                143,
+                157,
+                110,
+                105
               ]
             }
           }
@@ -807,8 +774,12 @@
                 ]
               },
               {
+                "kind": "account",
+                "path": "admin"
+              },
+              {
                 "kind": "arg",
-                "path": "pool_name"
+                "path": "pool_id"
               }
             ]
           }
@@ -818,7 +789,7 @@
         },
         {
           "name": "owner_program",
-          "address": "6spJY9XSUz9KtS73jqojSMzwuCdwiroy8AX9nZ27is3U"
+          "address": "5e4e9pooJgus8NcgdwZitZx1kF2vWZEA7MCTGi7BuKag"
         },
         {
           "name": "delegation_program",
@@ -831,8 +802,8 @@
       ],
       "args": [
         {
-          "name": "pool_name",
-          "type": "string"
+          "name": "pool_id",
+          "type": "u64"
         }
       ]
     },
@@ -860,25 +831,7 @@
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "Pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "pool_vault",
@@ -937,28 +890,23 @@
           "signer": true
         },
         {
-          "name": "global_config",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -966,25 +914,7 @@
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "Pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "pool_vault",
@@ -1043,28 +973,23 @@
           "signer": true
         },
         {
-          "name": "global_config",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1072,25 +997,7 @@
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "Pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "pool_vault",
@@ -1194,29 +1101,24 @@
       ],
       "accounts": [
         {
-          "name": "global_config",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1261,25 +1163,7 @@
           "signer": true
         },
         {
-          "name": "pool",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "Pool"
-              }
-            ]
-          }
+          "name": "pool"
         },
         {
           "name": "user_bet",
@@ -1382,28 +1266,23 @@
           "signer": true
         },
         {
-          "name": "global_config",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1411,25 +1290,7 @@
         },
         {
           "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.name",
-                "account": "Pool"
-              }
-            ]
-          }
+          "writable": true
         }
       ],
       "args": [
@@ -1453,29 +1314,24 @@
       ],
       "accounts": [
         {
-          "name": "global_config",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1512,29 +1368,24 @@
           "signer": true
         },
         {
-          "name": "global_config",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1567,28 +1418,23 @@
           "signer": true
         },
         {
-          "name": "global_config",
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1633,25 +1479,7 @@
           "writable": true
         },
         {
-          "name": "pool",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "user_bet.pool_identifier",
-                "account": "UserBet"
-              }
-            ]
-          }
+          "name": "pool"
         }
       ],
       "args": [
@@ -1680,29 +1508,24 @@
           "signer": true
         },
         {
-          "name": "global_config",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  103,
-                  108,
+                  112,
+                  114,
                   111,
-                  98,
-                  97,
-                  108,
-                  95,
+                  116,
+                  111,
                   99,
                   111,
-                  110,
-                  102,
-                  105,
-                  103,
+                  108,
                   95,
                   118,
-                  49
+                  50
                 ]
               }
             ]
@@ -1731,19 +1554,6 @@
   ],
   "accounts": [
     {
-      "name": "GlobalConfig",
-      "discriminator": [
-        149,
-        8,
-        156,
-        202,
-        160,
-        252,
-        176,
-        217
-      ]
-    },
-    {
       "name": "Pool",
       "discriminator": [
         241,
@@ -1754,6 +1564,19 @@
         177,
         109,
         188
+      ]
+    },
+    {
+      "name": "Protocol",
+      "discriminator": [
+        45,
+        39,
+        101,
+        43,
+        115,
+        72,
+        131,
+        40
       ]
     },
     {
@@ -1941,32 +1764,6 @@
       ]
     },
     {
-      "name": "PoolSecretsDelegated",
-      "discriminator": [
-        206,
-        56,
-        176,
-        117,
-        52,
-        5,
-        143,
-        222
-      ]
-    },
-    {
-      "name": "PoolSecretsUndelegated",
-      "discriminator": [
-        12,
-        188,
-        186,
-        95,
-        104,
-        237,
-        166,
-        136
-      ]
-    },
-    {
       "name": "PoolUndelegated",
       "discriminator": [
         223,
@@ -2042,43 +1839,43 @@
     },
     {
       "code": 6004,
-      "name": "AlreadySettled",
-      "msg": "Bet is already settled."
+      "name": "AlreadyClaimed",
+      "msg": "Bet is already claimed."
     },
     {
       "code": 6005,
+      "name": "WeightsAlreadyFinalized",
+      "msg": "Weights have already been finalized."
+    },
+    {
+      "code": 6006,
       "name": "BetAlreadyInitialized",
       "msg": "Bet is already initialized."
     },
     {
-      "code": 6006,
+      "code": 6007,
       "name": "DurationTooShort",
       "msg": "Bet duration is too short."
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "InvalidAsset",
       "msg": "Invalid asset symbol."
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "AssetNotWhitelisted",
       "msg": "Asset is not whitelisted."
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "SeedMismatch",
       "msg": "Seeds do not result in a valid address."
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "PoolMismatch",
       "msg": "Bet does not match the current pool/asset config"
-    },
-    {
-      "code": 6011,
-      "name": "InvalidPrivateKey",
-      "msg": "Private Key must be 32 bytes long."
     },
     {
       "code": 6012,
@@ -2099,11 +1896,6 @@
       "code": 6015,
       "name": "UndelegationTooEarly",
       "msg": "You must wait for the pool to end before undelegating to preserve privacy."
-    },
-    {
-      "code": 6016,
-      "name": "DecryptionFailed",
-      "msg": "TEE failed to decrypt the prediction."
     }
   ],
   "types": [
@@ -2230,7 +2022,7 @@
             "name": "Calculated"
           },
           {
-            "name": "Settled"
+            "name": "Claimed"
           }
         ]
       }
@@ -2267,6 +2059,10 @@
           {
             "name": "user",
             "type": "pubkey"
+          },
+          {
+            "name": "pool_identifier",
+            "type": "string"
           }
         ]
       }
@@ -2287,38 +2083,6 @@
             "type": {
               "option": "u64"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "GlobalConfig",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "admin",
-            "type": "pubkey"
-          },
-          {
-            "name": "treasury_wallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "protocol_fee_bps",
-            "type": "u64"
-          },
-          {
-            "name": "paused",
-            "type": "bool"
-          },
-          {
-            "name": "total_users",
-            "type": "u64"
-          },
-          {
-            "name": "batch_settle_wait_duration",
-            "type": "i64"
           }
         ]
       }
@@ -2369,6 +2133,10 @@
             "type": "string"
           },
           {
+            "name": "pool_id",
+            "type": "u64"
+          },
+          {
             "name": "token_mint",
             "type": "pubkey"
           },
@@ -2417,6 +2185,10 @@
           {
             "name": "weight_finalized",
             "type": "bool"
+          },
+          {
+            "name": "total_participants",
+            "type": "u64"
           },
           {
             "name": "bump",
@@ -2478,38 +2250,6 @@
       }
     },
     {
-      "name": "PoolSecretsDelegated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pool_address",
-            "type": "pubkey"
-          },
-          {
-            "name": "secrets_address",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PoolSecretsUndelegated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "pool_address",
-            "type": "pubkey"
-          },
-          {
-            "name": "secrets_address",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
       "name": "PoolUndelegated",
       "type": {
         "kind": "struct",
@@ -2517,6 +2257,42 @@
           {
             "name": "pool_address",
             "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Protocol",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": "u64"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "total_users",
+            "type": "u64"
+          },
+          {
+            "name": "batch_settle_wait_duration",
+            "type": "i64"
+          },
+          {
+            "name": "total_pools",
+            "type": "u64"
           }
         ]
       }
@@ -2567,8 +2343,8 @@
             "type": "pubkey"
           },
           {
-            "name": "pool_identifier",
-            "type": "string"
+            "name": "pool",
+            "type": "pubkey"
           },
           {
             "name": "deposit",
